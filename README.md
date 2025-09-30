@@ -5,6 +5,9 @@ initializeGit.java
         initalizes the git and objects directories, and initializes 2 files in the git directory (index and HEAD).
         If the directories and files already exist, an already exists message is outputted, otherwise all objects are created and a creation message is outputted. 
 
+    SHA1Hash()
+        Utilizes SHA1 code from geeksforgeeks to create and return hash values for inputs of text.
+
 GPTester.java
     verifyAll()
         returns true if all directories (git and objects) and files (index and HEAD) exist.
