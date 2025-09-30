@@ -8,6 +8,15 @@ initializeGit.java
     SHA1Hash()
         Utilizes SHA1 code from geeksforgeeks to create and return hash values for inputs of text.
 
+    createBLOB()
+        Utilizes SHA1Hash() to make a new file in the objects directory with the hash as the file name, does not make a new file if the file already exists. 
+
+    blobExists()
+        Returns true/false depending on if the blob exists. 
+
+    deleteAllBlobs()
+        Deletes all blobs in the objects directory.
+
 GPTester.java
     verifyAll()
         returns true if all directories (git and objects) and files (index and HEAD) exist.

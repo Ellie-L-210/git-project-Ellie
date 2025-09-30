@@ -1,4 +1,6 @@
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOError;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -8,8 +10,16 @@ import java.security.NoSuchAlgorithmException;
 public class initializeGit {
     public static void main(String[] args) throws IOException {
         // initialize();
-        System.out.println("testing SHA1");
-        System.out.println(SHA1Hash("HELLO"));
+        // System.out.println("testing SHA1");
+        // System.out.println(SHA1Hash("HELLO"));
+        createBLOB("hello");
+        createBLOB("Hi");
+        // System.out.println("SHA1 of hell0: " + SHA1Hash("hello"));
+        System.out.println(blobExists(SHA1Hash("hello")));
+        System.out.println(blobExists(SHA1Hash("Hi")));
+        deleteAllBlobs();
+        System.out.println(blobExists(SHA1Hash("hello")));
+        System.out.println(blobExists(SHA1Hash("Hi")));
     }
 
     public static void initialize() throws IOException {
@@ -66,6 +76,33 @@ public class initializeGit {
         // For specifying wrong message digest algorithms
         catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static void createBLOB(String fileContent) throws IOException {
+        String hash = SHA1Hash(fileContent);
+        if (!blobExists(hash)) {
+            File blob = new File("git/objects/" + hash);
+            BufferedWriter br = new BufferedWriter(new FileWriter(blob));
+            br.write(fileContent);
+            br.close();
+        }
+    }
+
+    public static boolean blobExists(String fileName) {
+        File current = new File("git/objects/" + fileName);
+        if (current.exists()) {
+            return true;
+        }
+        return false;
+    }
+
+    public static void deleteAllBlobs() {
+        File[] blobs = new File("git/objects").listFiles();
+        if (blobs != null) {
+            for (File blob : blobs) {
+                blob.delete();
+            }
         }
     }
 }
