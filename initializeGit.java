@@ -12,14 +12,29 @@ public class initializeGit {
         // initialize();
         // System.out.println("testing SHA1");
         // System.out.println(SHA1Hash("HELLO"));
-        createBLOB("hello");
-        createBLOB("Hi");
+        // createBLOB("hello");
+        // createBLOB("Hi");
         // System.out.println("SHA1 of hell0: " + SHA1Hash("hello"));
-        System.out.println(blobExists(SHA1Hash("hello")));
-        System.out.println(blobExists(SHA1Hash("Hi")));
-        deleteAllBlobs();
-        System.out.println(blobExists(SHA1Hash("hello")));
-        System.out.println(blobExists(SHA1Hash("Hi")));
+        // System.out.println(blobExists(SHA1Hash("hello")));
+        // System.out.println(blobExists(SHA1Hash("Hi")));
+        // deleteAllBlobs();
+        // System.out.println(blobExists(SHA1Hash("hello")));
+        // System.out.println(blobExists(SHA1Hash("Hi")));
+
+        // 2.4.1 Testing
+        String one = "hi";
+        String two = "hello";
+        String three = "hi hello";
+
+        createBLOB(one);
+        createBLOB(two);
+        createBLOB(three);
+
+        addToIndex(SHA1Hash(one), "hi.txt");
+        addToIndex(SHA1Hash(two), "hello.txt");
+        addToIndex(SHA1Hash(three), "hihello.txt");
+
+        // resetAllFiles();
     }
 
     public static void initialize() throws IOException {
@@ -104,5 +119,19 @@ public class initializeGit {
                 blob.delete();
             }
         }
+    }
+
+    public static void addToIndex(String hash, String fileName) throws IOException {
+        BufferedWriter br = new BufferedWriter(new FileWriter("git/index", true));
+        br.write(hash + " " + fileName + "\n");
+        br.close();
+    }
+
+    public static void resetAllFiles() throws IOException {
+        deleteAllBlobs();
+        File index = new File("git/index");
+        BufferedWriter br = new BufferedWriter(new FileWriter(index));
+        br.write("");
+        br.close();
     }
 }

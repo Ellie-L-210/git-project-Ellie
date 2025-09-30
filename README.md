@@ -16,6 +16,12 @@ initializeGit.java
 
     deleteAllBlobs()
         Deletes all blobs in the objects directory.
+    
+    addToIndex()
+        Adds sha value and file name to index file on a new line.
+    
+    deleteAllFiles()
+        Deletes all blobs and clears index file for easier testing.
 
 GPTester.java
     verifyAll()
