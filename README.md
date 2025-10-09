@@ -1,4 +1,8 @@
 # git-project-Ellie
+10/7/2025
+
+This project does not contain createTree() or createWorkingList() functionality
+
 initializeGit.java
     initialize()
         initaializes all parts of the repository in one method.
@@ -28,3 +32,6 @@ GPTester.java
         returns true if all directories (git and objects) and files (index and HEAD) exist.
     reset()
         deletes all files in the git and objects directories first, then deletes the now empty directories.
+
+10/9/2025 I added the commit method and the wrapper class for the tester. 
+Also added missing createTree() and generateWorkingList() functionality
