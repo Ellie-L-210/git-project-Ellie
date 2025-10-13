@@ -11,7 +11,7 @@ public class GPTester {
         // initalize then reset at least 5 times
         // Git.init();
         // reset();
-        Git.init();
+        // Git.init();
         // reset();
         // Git.init();
         // reset();
@@ -47,31 +47,37 @@ public class GPTester {
 
         // TEST: if addToIndex ignores the SAME file with the same hash from the same
         // directory - YES
-        Git.addToIndex(Git.SHA1Hash(test1), test1);
+        // Git.addToIndex(Git.SHA1Hash(test1), test1);
 
         // TEST: if addToIndex will add the SAME file in a DIFFERENT directory - YES
-        File diffDirectoryTest1 = new File("git/text1.txt");
-        BufferedWriter brDiffDirectory = new BufferedWriter(new FileWriter(diffDirectoryTest1));
-        brDiffDirectory.write("hi this is test file1.");
-        brDiffDirectory.close();
-        Git.addToIndex(Git.SHA1Hash(diffDirectoryTest1), diffDirectoryTest1);
+        // File diffDirectoryTest1 = new File("git/text1.txt");
+        // BufferedWriter brDiffDirectory = new BufferedWriter(new
+        // FileWriter(diffDirectoryTest1));
+        // brDiffDirectory.write("hi this is test file1.");
+        // brDiffDirectory.close();
+        // Git.addToIndex(Git.SHA1Hash(diffDirectoryTest1), diffDirectoryTest1);
 
         // TEST: if addToIndex will add a file with the SAME contents, DIFFERENT name -
         // YES
-        File test4 = new File("test4.txt");
-        BufferedWriter br4 = new BufferedWriter(new FileWriter(test4, true));
-        br4.write("hi this is test file1.");
-        Git.addToIndex(Git.SHA1Hash(test4), test4);
-        System.out.println(Git.SHA1Hash(test4));
+        // File test4 = new File("test4.txt");
+        // BufferedWriter br4 = new BufferedWriter(new FileWriter(test4, true));
+        // br4.write("hi this is test file1.");
+        // Git.addToIndex(Git.SHA1Hash(test4), test4);
+        // System.out.println(Git.SHA1Hash(test4));
 
         // TEST: if addToIndex will update the index file when a CURRENT file is
         // // MODIFIED - YES
-        br4.write("this is the modification to file test4!");
-        br4.close();
-        System.out.println(Git.SHA1Hash(test4));
-        Git.addToIndex(Git.SHA1Hash(test4), test4);
+        // br4.write("this is the modification to file test4!");
+        // br4.close();
+        // System.out.println(Git.SHA1Hash(test4));
+        // Git.addToIndex(Git.SHA1Hash(test4), test4);
 
         // Git.resetAllFiles();
+
+        // TEST: if createTree works
+        resetTestDirectory("groceryStore");
+        makeTestDirectory();
+        System.out.println(Git.createTree("groceryStore"));
     }
 
     // GP 2.0 TEST METHODS
@@ -97,5 +103,45 @@ public class GPTester {
 
         git.delete();
         objects.delete();
+    }
+
+    // GP 3.0 TEST METHODS
+    public static void makeTestDirectory() throws IOException {
+        File groceryStore = new File("groceryStore");
+        groceryStore.mkdir();
+
+        File fruits = new File("groceryStore/fruits");
+        fruits.mkdir();
+
+        // File vegetables = new File("groceryStore/vegetables");
+        // vegetables.mkdir();
+
+        File apple = new File("groceryStore/fruits/apple");
+        BufferedWriter appleWriter = new BufferedWriter(new FileWriter(apple));
+        appleWriter.write("this is the apple file!");
+        appleWriter.close();
+
+        File broccoli = new File("groceryStore/broccoli");
+        BufferedWriter broccoliWriter = new BufferedWriter(new FileWriter(broccoli));
+        broccoliWriter.write("this is the broccoli file!");
+        broccoliWriter.close();
+
+    }
+
+    public static void resetTestDirectory(String currentDirPath) throws IOException {
+        File currentDir = new File(currentDirPath);
+        File[] files = currentDir.listFiles();
+
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    resetTestDirectory(file.getPath());
+                } else {
+                    file.delete();
+                }
+            }
+
+            currentDir.delete();
+        }
     }
 }

@@ -9,10 +9,10 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Git {
-
     public Git() throws IOException {
         init();
     }
@@ -217,4 +217,53 @@ public class Git {
         br.write("");
         br.close();
     }
+
+    public static String createTree(String directoryPath) throws IOException {
+        StringBuilder treeContent = new StringBuilder();
+        File currentFile = new File(directoryPath);
+        File[] children = currentFile.listFiles();
+
+        for (File child : children) {
+            if (child.isFile()) {
+                createBLOB(child);
+                if (treeContent.isEmpty()) {
+                    treeContent.append("blob " + SHA1Hash(child) + " " + child.getPath());
+                } else {
+                    treeContent.append("\nblob " + SHA1Hash(child) + " " + child.getPath());
+                }
+                System.out.println("Added: " + child.getAbsolutePath());
+
+                // if (child == children[0]) {
+                // text.append("blob " + SHA1Hash(child) + " " + child.getPath());
+                // } else {
+                // text.append("\nblob " + SHA1Hash(child) + " " + child.getPath());
+                // }
+            } else if (child.isDirectory()) {
+                String treeHash = createTree(child.getPath());
+
+                if (treeContent.isEmpty()) {
+                    treeContent.append("tree " + treeHash + " " + child.getPath());
+                } else {
+                    treeContent.append("\ntree " + treeHash + " " + child.getPath());
+                }
+                System.out.println("Added: " + child.getAbsolutePath());
+
+                // if (child == children[0]) {
+                // text.append("tree " + SHA1Hash(hashedTree) + " " + child.getPath());
+                // } else {
+                // text.append("\ntree " + SHA1Hash(hashedTree) + " " + child.getPath());
+                // }
+            }
+
+        }
+
+        File tree = new File(directoryPath + "file");
+        BufferedWriter bw = new BufferedWriter(new FileWriter(tree));
+        bw.write(treeContent.toString());
+        bw.close();
+        String finalTreeHash = SHA1Hash(tree);
+        tree.renameTo(new File("git/objects/" + finalTreeHash));
+        return finalTreeHash;
+    }
+
 }
