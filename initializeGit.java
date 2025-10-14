@@ -147,7 +147,7 @@ public class initializeGit {
     }
 
     public static String commit(String author, String message) throws IOException {
-        String contents = "tree ";
+        String contents = "tree: ";
         String workingListSha = Files.readString(Path.of("git/objects/workinglist")); //edit path name
         workingListSha = workingListSha.substring(workingListSha.indexOf(" ") + 1);
         workingListSha = workingListSha.substring(0, workingListSha.indexOf(" "));
