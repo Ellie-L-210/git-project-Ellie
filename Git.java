@@ -19,7 +19,7 @@ import java.util.Scanner;
 
 public class Git {
     public Git() throws IOException {
-        init();
+        // init();
     }
 
     public static void init() throws IOException {
@@ -88,6 +88,9 @@ public class Git {
     }
 
     public static File createBLOB(File original) throws IOException {
+        if (original.isDirectory()) {
+            throw new IllegalArgumentException();
+        }
         // creates hash from original File
         String hash = SHA1Hash(original);
 
