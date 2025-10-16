@@ -284,56 +284,53 @@ public class Git {
         tempWriter.close();
         br.close();
 
-        BufferedWriter finalWriter = new BufferedWriter(new FileWriter("git/workingList"));
-        String lastThing = "tree " + SHA1Hash(temp) + " " + finalLine.substring(finalLine.lastIndexOf(" ") + 1);
-        System.out.println(lastThing);
+        String finalHash = SHA1Hash(temp);
+        String lastThing = ("tree " + finalHash + " " + "LAST");
+
+        BufferedWriter finalWriter = new BufferedWriter(new FileWriter("git/objects/" + finalHash));
         finalWriter.write(lastThing);
         finalWriter.close();
 
     }
 
     // adds "blob" to all entries in the index file, then sorts the list by
-    // directory path
+    // directory path, reverses it to have leafmost files first
     public static void initializeList() throws IOException {
-        List<String> workingList = new ArrayList<String>();
-        // workingList file to write sorted index into
+        // list of files to sort
+        List<String> fileList = new ArrayList<String>();
+        // workingList file to write sorted fileList into
         File workingListFile = new File("git/workingList");
         BufferedWriter bw = new BufferedWriter(new FileWriter(workingListFile));
 
-        // workingList array to sort index file
         BufferedReader br = new BufferedReader(new FileReader(("git/index")));
 
         // add "blob" to each line in index file
         while (br.ready()) {
-            workingList.add("blob " + br.readLine());
+            fileList.add("blob " + br.readLine());
         }
         br.close();
 
-        Collections.sort(workingList, new Comparator<String>() {
+        Collections.sort(fileList, new Comparator<String>() {
             @Override
             public int compare(String line1, String line2) {
                 // get full path of each line
                 String fullPath1 = line1.substring(line1.indexOf("git-project-Ellie/"));
                 String fullPath2 = line2.substring(line2.indexOf("git-project-Ellie/"));
 
-                // exclude file name from each directory path
-                String directoryPath1 = fullPath1.substring(0, fullPath1.lastIndexOf("/"));
-                String directoryPath2 = fullPath2.substring(0, fullPath2.lastIndexOf("/"));
-
-                return directoryPath1.compareTo(directoryPath2);
+                return fullPath1.compareTo(fullPath2);
             }
 
         });
 
         // reverse sorted list so leaf-most files come first
-        workingList = workingList.reversed();
+        fileList = fileList.reversed();
 
         // write sorted workingList array into workingList file
-        for (int i = 0; i < workingList.size(); i++) {
+        for (int i = 0; i < fileList.size(); i++) {
             if (i == 0) {
-                bw.write(workingList.get(i));
+                bw.write(fileList.get(i));
             } else {
-                bw.write("\n" + workingList.get(i));
+                bw.write("\n" + fileList.get(i));
             }
         }
 
@@ -348,37 +345,51 @@ public class Git {
 
         while (br.ready() && isSameDir == true) {
             String line = br.readLine();
-            String restOfLine = line.substring(0, line.indexOf("git-project-Ellie/"));
+            // blob and SHA
+            String blobAndSha = line.substring(0, line.indexOf("git-project-Ellie/"));
+            // current path in line, with no file name
             String currentPath = line.substring(line.indexOf("git-project-Ellie/"), line.lastIndexOf("/"));
 
             // if previous and current path are the same, or if previous path is empty
             // (first time)
             if (previousPath.equals(currentPath) | previousPath.equals("")) {
-                String appendedLine = restOfLine + line.substring(line.lastIndexOf("/") + 1);
+                // line of working list with no path, but with file name
+                String appendedLine = blobAndSha + line.substring(line.lastIndexOf("/") + 1);
                 if (tree.isEmpty()) {
                     tree.append(appendedLine);
                 } else {
                     tree.append("\n" + appendedLine);
                 }
+                // remove file entry from working list
                 removeFromWorkingList(line);
                 previousPath = currentPath;
-            } else {
+            } else if (!previousPath.equals(currentPath) || currentPath.equals("git-project-Ellie")) {
+                File treeFile = new File("treeFile");
+                BufferedWriter bw = new BufferedWriter(new FileWriter(treeFile));
+                bw.write(tree.toString());
+                bw.close();
+
+                String finalTreeHash = SHA1Hash(treeFile);
+                treeFile.renameTo(new File("git/objects/" + finalTreeHash));
+
+                // update working list by adding new tree file
+                addToWorkingList("tree " + finalTreeHash + " " + previousPath);
+                System.out.println("made tree of " + tree.toString());
                 isSameDir = false;
                 makeTreeFromIndex();
             }
 
         }
-        br.close();
 
-        File treeFile = new File("treeFile");
-        BufferedWriter bw = new BufferedWriter(new FileWriter(treeFile));
-        bw.write(tree.toString());
-        bw.close();
+        // br.close();
 
-        String finalTreeHash = SHA1Hash(treeFile);
-        treeFile.renameTo(new File("git/objects/" + finalTreeHash));
+        // File treeFile = new File("treeFile");
+        // BufferedWriter bw = new BufferedWriter(new FileWriter(treeFile));
+        // bw.write(tree.toString());
+        // bw.close();
 
-        addToWorkingList("tree " + finalTreeHash + " " + previousPath);
+        // String finalTreeHash = SHA1Hash(treeFile);
+        // treeFile.renameTo(new File("git/objects/" + finalTreeHash));
     }
 
     public static void removeFromWorkingList(String readLine) throws IOException {
@@ -388,6 +399,8 @@ public class Git {
         File temp = File.createTempFile("temporaryWorkingList", ".txt");
         BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
 
+        // copies all lines from current workingList file into temp.txt except for
+        // readLine
         while (br.ready()) {
             String line = br.readLine();
             if (!line.equals(readLine)) {
@@ -398,25 +411,57 @@ public class Git {
                 }
             }
         }
-        temp.renameTo(workingList);
         br.close();
         bw.close();
+        // rename temp to workingList
+        temp.renameTo(workingList);
     }
 
     public static void addToWorkingList(String addedLine) throws IOException {
+        int slashes = addedLine.split("/").length - 1;
+        String upperPath = addedLine.substring(addedLine.indexOf("git-project-Ellie"), addedLine.lastIndexOf("/"));
+
         File workingList = new File("git/workingList");
         BufferedReader br = new BufferedReader(new FileReader(workingList));
 
         File temp = File.createTempFile("temporaryWorkingList", ".txt");
         BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
 
-        bw.write(addedLine);
+        Boolean isAdded = false;
         while (br.ready()) {
             String line = br.readLine();
-            if (!line.equals(addedLine)) {
-                bw.write("\n" + line);
+            if (line.substring(line.indexOf("git-project-Ellie"), line.indexOf("/")).equals(upperPath)
+                    && isAdded == false) {
+                if (br.ready()) {
+                    bw.write(line + "\n");
+                    bw.write(addedLine + "\n");
+                } else {
+                    bw.write(line + "\n");
+                    bw.write(addedLine);
+                }
+                isAdded = true;
+            } else if ((line.split("/").length - 1) == slashes && isAdded == false) {
+                if (br.ready()) {
+                    bw.write(line + "\n");
+                    bw.write(addedLine + "\n");
+                } else {
+                    bw.write(line + "\n");
+                    bw.write(addedLine);
+                }
+                isAdded = true;
+            } else {
+                if (br.ready()) {
+                    bw.write(line + "\n");
+                } else {
+                    bw.write(line);
+                }
             }
         }
+
+        if (isAdded == false) {
+            bw.write("\n" + addedLine);
+        }
+
         temp.renameTo(workingList);
         br.close();
         bw.close();
