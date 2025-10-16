@@ -268,7 +268,6 @@ public class Git {
         File temp = File.createTempFile("finalTemp", ".txt");
         StringBuilder listContents = new StringBuilder();
         BufferedWriter tempWriter = new BufferedWriter(new BufferedWriter(new FileWriter(temp)));
-        String finalLine = "";
 
         while (br.ready()) {
             String line = br.readLine();
@@ -276,7 +275,6 @@ public class Git {
                 listContents.append(line + "\n");
             } else {
                 listContents.append(line);
-                finalLine = line;
             }
         }
 
@@ -285,9 +283,10 @@ public class Git {
         br.close();
 
         String finalHash = SHA1Hash(temp);
-        String lastThing = ("tree " + finalHash + " " + "LAST");
+        String lastThing = ("tree " + finalHash + " " + "git-project-Ellie");
 
-        BufferedWriter finalWriter = new BufferedWriter(new FileWriter("git/objects/" + finalHash));
+        BufferedWriter finalWriter = new BufferedWriter(new FileWriter("git/objects/"
+                + finalHash));
         finalWriter.write(lastThing);
         finalWriter.close();
 
@@ -363,33 +362,34 @@ public class Git {
                 // remove file entry from working list
                 removeFromWorkingList(line);
                 previousPath = currentPath;
-            } else if (!previousPath.equals(currentPath) || currentPath.equals("git-project-Ellie")) {
-                File treeFile = new File("treeFile");
-                BufferedWriter bw = new BufferedWriter(new FileWriter(treeFile));
-                bw.write(tree.toString());
-                bw.close();
-
-                String finalTreeHash = SHA1Hash(treeFile);
-                treeFile.renameTo(new File("git/objects/" + finalTreeHash));
-
-                // update working list by adding new tree file
-                addToWorkingList("tree " + finalTreeHash + " " + previousPath);
-                System.out.println("made tree of " + tree.toString());
-                isSameDir = false;
-                makeTreeFromIndex();
             }
-
         }
 
-        // br.close();
+        File treeFile = new File("treeFile");
+        BufferedWriter bw = new BufferedWriter(new FileWriter(treeFile));
+        bw.write(tree.toString());
+        bw.close();
 
-        // File treeFile = new File("treeFile");
-        // BufferedWriter bw = new BufferedWriter(new FileWriter(treeFile));
-        // bw.write(tree.toString());
-        // bw.close();
+        String finalTreeHash = SHA1Hash(treeFile);
+        treeFile.renameTo(new File("git/objects/" + finalTreeHash));
 
-        // String finalTreeHash = SHA1Hash(treeFile);
-        // treeFile.renameTo(new File("git/objects/" + finalTreeHash));
+        if (!previousPath.equals("git-project-Ellie")) {
+            // update working list by adding new tree file
+            addToWorkingList("tree " + finalTreeHash + " " + previousPath);
+            System.out.println("made tree of " + tree.toString());
+            isSameDir = false;
+            makeTreeFromIndex();
+
+            // BufferedReader finalWorkingListReader = new BufferedReader(new
+            // FileReader("git/workingList"));
+            // if (!finalWorkingListReader.readLine().split("
+            // ")[2].equals("git-project-Ellie")) {
+            // makeTreeFromIndex();
+            // }
+
+            // finalWorkingListReader.close();
+        }
+        br.close();
     }
 
     public static void removeFromWorkingList(String readLine) throws IOException {
@@ -428,7 +428,9 @@ public class Git {
         BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
 
         Boolean isAdded = false;
+        Boolean written = false;
         while (br.ready()) {
+            written = true;
             String line = br.readLine();
             if (line.substring(line.indexOf("git-project-Ellie"), line.indexOf("/")).equals(upperPath)
                     && isAdded == false) {
@@ -458,10 +460,14 @@ public class Git {
             }
         }
 
-        if (isAdded == false) {
+        // BufferedReader finalReader = new BufferedReader(new
+        // FileReader("git/workingList"));
+        if (isAdded == false && written == true) {
             bw.write("\n" + addedLine);
+        } else if (written == false) {
+            bw.write(addedLine);
         }
-
+        // finalReader.close();
         temp.renameTo(workingList);
         br.close();
         bw.close();
