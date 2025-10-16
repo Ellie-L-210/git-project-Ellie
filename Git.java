@@ -263,35 +263,42 @@ public class Git {
     }
 
     public static void treeFromIndex() throws IOException {
-        initializeList();
-        makeTreeFromIndex();
+        BufferedReader indexReader = new BufferedReader(new FileReader("git/index"));
+        if (!indexReader.ready()) {
+            // new file in objects directory with sha of an empty file.
+            File emptyIndex = new File("git/objects/da39a3ee5e6b4b0d3255bfef95601890afd80709");
+        } else {
+            initializeList();
+            makeTreeFromIndex();
 
-        BufferedReader br = new BufferedReader(new FileReader("git/workingList"));
+            BufferedReader br = new BufferedReader(new FileReader("git/workingList"));
 
-        File temp = File.createTempFile("finalTemp", ".txt");
-        StringBuilder listContents = new StringBuilder();
-        BufferedWriter tempWriter = new BufferedWriter(new BufferedWriter(new FileWriter(temp)));
+            File temp = File.createTempFile("finalTemp", ".txt");
+            StringBuilder listContents = new StringBuilder();
+            BufferedWriter tempWriter = new BufferedWriter(new BufferedWriter(new FileWriter(temp)));
 
-        while (br.ready()) {
-            String line = br.readLine();
-            if (br.ready()) {
-                listContents.append(line + "\n");
-            } else {
-                listContents.append(line);
+            while (br.ready()) {
+                String line = br.readLine();
+                if (br.ready()) {
+                    listContents.append(line + "\n");
+                } else {
+                    listContents.append(line);
+                }
             }
+
+            tempWriter.write(listContents.toString());
+            tempWriter.close();
+            br.close();
+
+            String finalHash = SHA1Hash(temp);
+            String lastThing = ("tree " + finalHash + " " + "git-project-Ellie");
+
+            BufferedWriter finalWriter = new BufferedWriter(new FileWriter("git/objects/"
+                    + finalHash));
+            finalWriter.write(lastThing);
+            finalWriter.close();
         }
-
-        tempWriter.write(listContents.toString());
-        tempWriter.close();
-        br.close();
-
-        String finalHash = SHA1Hash(temp);
-        String lastThing = ("tree " + finalHash + " " + "git-project-Ellie");
-
-        BufferedWriter finalWriter = new BufferedWriter(new FileWriter("git/objects/"
-                + finalHash));
-        finalWriter.write(lastThing);
-        finalWriter.close();
+        indexReader.close();
 
     }
 

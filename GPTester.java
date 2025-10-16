@@ -79,10 +79,11 @@ public class GPTester {
         // makeTestDirectory();
         // System.out.println(Git.createTree("groceryStore"));
 
-        // TEST: if treeFromIndex() and supporting methods work for a larger directory
-        Git.resetAllFiles();
-        leagueOfLegends();
-        Git.treeFromIndex();
+        // TEST: if treeFromIndex() and supporting methods work for a larger directory -
+        // YES
+        // Git.resetAllFiles();
+        // leagueOfLegends();
+        // Git.treeFromIndex();
     }
 
     // GP 2.0 TEST METHODS
